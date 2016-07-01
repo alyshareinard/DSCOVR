@@ -9,8 +9,8 @@ import sys
 sys.path.append('../common/')
 from scipy.io.idl import readsav
 import os
-from datetime import datetime, timezone
-from sunpy_time import parse_time
+#from datetime import datetime, timezone
+#from sunpy_time import parse_time
 
 def read_DSCOVR_currents():
 
@@ -21,5 +21,14 @@ def read_DSCOVR_currents():
 
     rootdir=os.path.join(osdir, "Dropbox", "Work", "IDL_code", "analysis", "DSCOVR")+os.sep
     print("fulldir", rootdir)
-    data=readsav(rootdir+"faraday_cup.sav")
-    print(data)
+    data=readsav(rootdir+"fc_time_currents.sav")
+    print(data.keys())
+    current_a=data["current_a"]
+    current_b=data["current_b"]
+    current_c=data["current_c"]
+    fc_date=data["fc_date"]
+    fc_time=data["fc_time"]
+    mod_val=data["mod_value"]
+    print(mod_val)
+    
+read_DSCOVR_currents()

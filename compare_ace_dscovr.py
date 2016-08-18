@@ -10,11 +10,50 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 import sys
 
-def scatter_plot(ace, dscovr):
+def scatter_plot(ace, dscovr, product):
+
+#    product="bt" #options: lon, lon+120, lat, bt, bz
+
 
     #choose which data product we want to plot
-    ace_product=ace.lon
-    dscovr_product=dscovr.lon
+
+    if product=="lon" or product=="lon+120":
+        ace_product=ace.lon
+        dscovr_product=dscovr.lon
+        ranges=[0,400]
+        if product=="lon":
+            title="phi/lon from "+str(min(dscovr.date))+" to "+str(max(dscovr.date))
+        elif product=="lon+120":
+            title="ACE+120, phi/lon from "+str(min(dscovr.date))+" to "+str(max(dscovr.date) )
+            
+    elif product=="lat":
+        ace_product=ace.lat
+        dscovr_product=dscovr.lat
+        title="theta/lat from "+str(min(dscovr.date))+" to "+str(max(dscovr.date))
+        ranges=[-100,100]
+    elif product=="bt":
+        ace_product=ace.bt
+        dscovr_product=dscovr.bt
+        title="Bt from "+str(min(dscovr.date))+" to "+str(max(dscovr.date))
+        ranges=[0,10]
+    elif product=="bx":
+        ace_product=ace.bx
+        dscovr_product=dscovr.bx
+        title="Bx from "+str(min(dscovr.date))+" to "+str(max(dscovr.date))
+        ranges=[-8,8] 
+    elif product=="by":
+        ace_product=ace.by
+        dscovr_product=dscovr.by
+        title="By from "+str(min(dscovr.date))+" to "+str(max(dscovr.date))
+        ranges=[-8,8] 
+    elif product=="bz":
+        ace_product=ace.bz
+        dscovr_product=dscovr.bz
+        title="Bz from "+str(min(dscovr.date))+" to "+str(max(dscovr.date))
+        ranges=[-8,8] 
+
+
+        
     #align data
     ace_data=[]
     dscovr_data=[]
@@ -27,8 +66,10 @@ def scatter_plot(ace, dscovr):
         if dscovr.date[dscovr_index]==ace.date[index]:
 #            print("got one!")
             if ace_product[index]>-500 and dscovr_product[index]>-500:
-                val=ace_product[index]+120
-                if val>400: val=val-360
+                if product=="lon+120":
+                    val=ace_product[index]+120
+                    if val>400: val=val-360
+                else: val=ace_product[index]
 #                ace_data.append(ace_product[index])
                 ace_data.append(val)
                 dscovr_data.append(dscovr_product[dscovr_index])
@@ -38,10 +79,11 @@ def scatter_plot(ace, dscovr):
             
     #plot
     plt.plot(ace_data, dscovr_data, 'b.')
-    plt.title("ACE+120, phi/lon from August 10-16, 2016")
+#    plt.xlim([0,10])
+    plt.title(title)
     plt.xlabel("ACE data")
     plt.ylabel("DSCOVR data")
-    plt.plot([0,400], [0,400])
+    plt.plot(ranges, ranges)
     plt.show()        
         
 
@@ -104,7 +146,7 @@ def plot_bx_by_bz(ace, dscovr):
     plt.xticks([])  
     
 
-class ace_class:
+class ace_class_web:
     
     def __init__(self):
         if os.sep=="/":
@@ -154,6 +196,59 @@ class ace_class:
                     self.bt.append(float(line[10]))
                     self.lat.append(float(line[11]))
                     self.lon.append(float(line[12]))
+                    
+                    
+class ace_class_sql:
+    
+    def __init__(self):
+        if os.sep=="/":
+            osdir=os.sep+os.path.join("Users", "alyshareinard")
+        else:
+            osdir=os.path.join("C:"+os.sep+"Users", "alysha.reinard.SWPC")
+    
+        rootdir=os.path.join(osdir, "Dropbox", "Work", "data", "DSCOVR")+os.sep
+        
+        acelist=glob.glob(os.path.join(rootdir, '*ace_mag1.txt'))
+        self.date=[]
+        self.s=[]
+        self.bx=[]
+        self.by=[]
+        self.bz=[]
+        self.bt=[]
+        self.lat=[]
+        self.lon=[]
+        for acefile in acelist:
+            
+            with open(acefile, "r") as f:
+                ace_data=f.readlines()
+            for line in ace_data:
+    #            year.append(line[0:4])
+    #            month.append(line[5:7])
+    #            day.append(line[8:10])
+    #            time.append(line[12:16])
+                
+    #            print("year", line[0:4])
+                line=str(line).lstrip(")
+                print("line", line)
+                if line[0]!='"P' and line[0]!='" t':
+                    line=line.split()
+                    
+                    year=int(line[0])
+                    month=int(line[1])
+                    day=int(line[2])
+                    hhmm=line[3]
+                    hour=int(hhmm[0:2])
+                    minute=int(hhmm[2:4])
+                    self.date.append(datetime(year, month, day, hour, minute))
+                
+                    self.s.append(int(line[6]))
+                    self.bx.append(float(line[7]))
+                    self.by.append(float(line[8]))
+                    self.bz.append(float(line[9]))
+                    self.bt.append(float(line[10]))
+                    self.lat.append(float(line[11]))
+                    self.lon.append(float(line[12]))
+                    
 #            except Exception as e: 
 #                print(str(e))
           
@@ -174,7 +269,7 @@ class ace_class:
 
     
     
-class dscovr_class:
+class dscovr_class_web:
     def __init__(self):
         if os.sep=="/":
             osdir=os.sep+os.path.join("Users", "alyshareinard")
@@ -219,12 +314,12 @@ class dscovr_class:
 
 
 
-dscovr=dscovr_class()
-ace=ace_class()
+dscovr=dscovr_class_web()
+ace=ace_class_sql()
 
 #plot_bx_by_bz(ace, dscovr)
 #plot_bt_lat_lon(ace, dscovr)
-scatter_plot(ace, dscovr)
+scatter_plot(ace, dscovr, "bx") #options: lon, lon+120, lat, bt, bz
 
 
 

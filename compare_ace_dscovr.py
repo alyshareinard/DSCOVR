@@ -8,13 +8,25 @@ import os
 import glob
 import matplotlib.pyplot as plt
 from datetime import datetime
+from datetime import timedelta
 import sys
+import numpy as np
 
-def scatter_plot(ace, dscovr, product):
+def scatter_plot(ace, dscovr, product, start_date, end_date):
 
 #    product="bt" #options: lon, lon+120, lat, bt, bz
 
 
+    
+    ace_date=[]
+    ace_bx=[]
+    for i in range(len(ace.date)):
+        if ace.date[i]>start_date and ace.date[i]<end_date:
+            ace_date.append(ace.date[i])
+            ace_bx.append(ace.bx[i])
+#    print(ace_date)
+    if len(ace_date)==0:
+        return[0,0]
     #choose which data product we want to plot
 
     if product=="lon" or product=="lon+120":
@@ -37,9 +49,10 @@ def scatter_plot(ace, dscovr, product):
         title="Bt from "+str(min(dscovr.date))+" to "+str(max(dscovr.date))
         ranges=[0,10]
     elif product=="bx":
-        ace_product=ace.bx
+        ace_product=ace_bx
         dscovr_product=dscovr.bx
-        title="Bx from "+str(min(dscovr.date))+" to "+str(max(dscovr.date))
+#        title="Bx from "+str(min(dscovr.date))+" to "+str(max(dscovr.date))
+        title="Bx from "+str(min(ace_date))+" to "+str(max(ace_date))
         ranges=[-8,8] 
     elif product=="by":
         ace_product=ace.by
@@ -53,19 +66,21 @@ def scatter_plot(ace, dscovr, product):
         ranges=[-8,8] 
 
 
+
         
     #align data
     ace_data=[]
     dscovr_data=[]
     dscovr_index=0
-    for index in range(len(ace.date)):
+    for index in range(len(ace_date)):
 #        print(index)
-        while dscovr.date[dscovr_index]<ace.date[index]:
+        while dscovr.date[dscovr_index]<ace_date[index] and dscovr_index<len(dscovr.date)-1:
             dscovr_index+=1
-            print("skipping dscovr, no ace")
-        if dscovr.date[dscovr_index]==ace.date[index]:
+#            print(dscovr_index)
+#            print("skipping dscovr, no ace")
+        if dscovr.date[dscovr_index]==ace_date[index]:
 #            print("got one!")
-            if ace_product[index]>-500 and dscovr_product[index]>-500:
+            if ace_product[index]!=None and dscovr_product[dscovr_index]!=None and ace_product[index]>-500 and dscovr_product[dscovr_index]>-500:
                 if product=="lon+120":
                     val=ace_product[index]+120
                     if val>400: val=val-360
@@ -75,16 +90,27 @@ def scatter_plot(ace, dscovr, product):
                 dscovr_data.append(dscovr_product[dscovr_index])
             dscovr_index+=1
         else:
-            print("skipping ace, no dscovr")
+            pass
+ #           print("skipping ace, no dscovr")
             
     #plot
-    plt.plot(ace_data, dscovr_data, 'b.')
-#    plt.xlim([0,10])
-    plt.title(title)
-    plt.xlabel("ACE data")
-    plt.ylabel("DSCOVR data")
-    plt.plot(ranges, ranges)
-    plt.show()        
+    if len(dscovr_data) != len(ace_data):
+        print("DSCOVR/ACE data not same length!!")
+    cc=np.corrcoef(ace_data, dscovr_data)
+    rms=np.sqrt(((np.array(ace_data) - np.array(dscovr_data)) ** 2).mean())
+#    print(start_date, cc[0,1])
+    print(start_date, cc[0,1], rms)
+
+
+#    plt.plot(ace_data, dscovr_data, 'b.')
+##    plt.xlim([0,10])
+#    plt.title(title)
+#    plt.xlabel("ACE data")
+#    plt.ylabel("DSCOVR data")
+#    plt.plot(ranges, ranges)
+#    plt.show()   
+    return [cc[0,1], rms]
+#    return cc[0,1]    
         
 
 def plot_bt_lat_lon(ace, dscovr):
@@ -125,25 +151,31 @@ def plot_bt_lat_lon(ace, dscovr):
     
 def plot_bx_by_bz(ace, dscovr):
     plt.subplot(3,1,1) 
-    plt.plot(ace.date, ace.bx, '.')
-    plt.plot(dscovr.date, dscovr.bx, '.')
-    plt.ylim(0, 20)
+    plt.plot(ace.date, ace.bx, 'b.')
+    plt.plot(dscovr.date, dscovr.bx, 'r.')
+    plt.ylim(-6, 6)
+    plt.xlim(datetime(2016, 8, 11), datetime(2016, 8, 12))
     plt.ylabel("bx")
     plt.xticks([]) 
+    plt.title("ACE (blue) and DSCOVR (red) for Aug 15, 2016")
     
     plt.subplot(3,1,2) 
-    plt.plot(ace.date, ace.by, '.')
-    plt.plot(dscovr.date, dscovr.by, '.')
-    plt.ylim(0, 20)
+    plt.plot(ace.date, ace.by, 'b.')
+    plt.plot(dscovr.date, dscovr.by, 'r.')
+    plt.ylim(-6, 6)
+    plt.xlim(datetime(2016, 8, 11), datetime(2016, 8, 12))
+
     plt.ylabel("by")
     plt.xticks([])   
     
     plt.subplot(3,1,3) 
-    plt.plot(ace.date, ace.bz, '.')
-    plt.plot(dscovr.date, dscovr.bz, '.')
-    plt.ylim(0, 20)
+    plt.plot(ace.date, ace.bz, 'b.')
+    plt.plot(dscovr.date, dscovr.bz, 'r.')
+
+    plt.xlim(datetime(2016, 8, 11), datetime(2016, 8, 12))
+    plt.ylim(-6, 6)
     plt.ylabel("bz")
-    plt.xticks([])  
+#    plt.xticks([])  
     
 
 class ace_class_web:
@@ -200,7 +232,7 @@ class ace_class_web:
                     
 class ace_class_sql:
     
-    def __init__(self):
+    def __init__(self, filename="ace_mag1.txt"):
         if os.sep=="/":
             osdir=os.sep+os.path.join("Users", "alyshareinard")
         else:
@@ -208,7 +240,7 @@ class ace_class_sql:
     
         rootdir=os.path.join(osdir, "Dropbox", "Work", "data", "DSCOVR")+os.sep
         
-        acelist=glob.glob(os.path.join(rootdir, '*ace_mag1.txt'))
+        acelist=glob.glob(os.path.join(rootdir, filename))
         self.date=[]
         self.s=[]
         self.bx=[]
@@ -228,26 +260,27 @@ class ace_class_sql:
     #            time.append(line[12:16])
                 
     #            print("year", line[0:4])
-                line=str(line).lstrip(")
-                print("line", line)
-                if line[0]!='"P' and line[0]!='" t':
+                line=str(line)
+#                print("line", line)
+                if line[0]!='P' and line[0]!=' t':
                     line=line.split()
-                    
-                    year=int(line[0])
-                    month=int(line[1])
-                    day=int(line[2])
-                    hhmm=line[3]
-                    hour=int(hhmm[0:2])
-                    minute=int(hhmm[2:4])
+#                    print(line)                    
+                    ymd=line[0].split("-")
+                    year=int(ymd[0])
+                    month=int(ymd[1])
+                    day=int(ymd[2])
+                    hhmm=line[1].split(":")
+                    hour=int(hhmm[0])
+                    minute=int(hhmm[1])
                     self.date.append(datetime(year, month, day, hour, minute))
                 
-                    self.s.append(int(line[6]))
-                    self.bx.append(float(line[7]))
-                    self.by.append(float(line[8]))
-                    self.bz.append(float(line[9]))
-                    self.bt.append(float(line[10]))
-                    self.lat.append(float(line[11]))
-                    self.lon.append(float(line[12]))
+#                    self.s.append(int(line[6]))
+                    self.bx.append(float(line[2]))
+                    self.by.append(float(line[3]))
+                    self.bz.append(float(line[4]))
+#                    self.bt.append(float(line[10]))
+#                    self.lat.append(float(line[11]))
+#                    self.lon.append(float(line[12]))
                     
 #            except Exception as e: 
 #                print(str(e))
@@ -311,16 +344,98 @@ class dscovr_class_web:
                 self.bz.append(float(line[5]))
                 self.lon.append(float(line[6]))
                 self.lat.append(float(line[7]))
+                
+class dscovr_class_sql:
+    def __init__(self, filename="dsc_mag1.txt"):
+        if os.sep=="/":
+            osdir=os.sep+os.path.join("Users", "alyshareinard")
+        else:
+            osdir=os.path.join("C:"+os.sep+"Users", "alysha.reinard.SWPC")
+    
+        rootdir=os.path.join(osdir, "Dropbox", "Work", "data", "DSCOVR")+os.sep
+        
+        dscovr_file=os.path.join(rootdir, filename)
+        self.date=[]
+        self.bx=[]
+        self.by=[]
+        self.bz=[]
+        self.bt=[]
+        self.lat=[]
+        self.lon=[]
+            
+        with open(dscovr_file, "r") as f:
+            dscovr_data=f.readlines()
+        for line in dscovr_data:
+            if line[0]!="T":
+                line=line.split()
+#                print(line)
+                ymd=line[0].split("-")
+    #            print(ymd)
+                year=int(ymd[0])
+                month=int(ymd[1])
+                day=int(ymd[2])
+                hms=line[1].split(":")
+                hour=int(hms[0])
+                minute=int(hms[1])
+                sec=int(round(float(hms[2])))
+    #            print(year, month, day, hour, minute, sec)
+                self.date.append(datetime(year, month, day, hour, minute, sec))
+    #            print(date)
+ #               self.bt.append(float(line[2]))
+                if line[2]=="NULL":
+                    self.bx.append(None)
+                else:
+                    self.bx.append(float(line[2]))
+                if line[3]=="NULL":
+                    self.by.append(None)
+                else:
+                    self.by.append(float(line[3]))
+                if line[4]=="NULL":
+                    self.bz.append(None)
+                else:
+                    self.bz.append(float(line[4]))
+#                self.lon.append(float(line[6]))
+#                self.lat.append(float(line[7]))
 
 
 
-dscovr=dscovr_class_web()
-ace=ace_class_sql()
 
+#dscovr=dscovr_class_web()
+#ace=ace_class_web()
 #plot_bx_by_bz(ace, dscovr)
-#plot_bt_lat_lon(ace, dscovr)
-scatter_plot(ace, dscovr, "bx") #options: lon, lon+120, lat, bt, bz
 
+cc=[]
+dates=[]
+rmse=[]
+
+for month in range(2,9):
+    print("ace_mag1_2016_0"+str(month)+".txt")
+    dscovr=dscovr_class_sql(filename="dsc_mag1_2016_0"+str(month)+".txt")
+    ace=ace_class_sql(filename="ace_mag1_2016_0"+str(month)+".txt")
+#    print("dates", ace.date)
+
+
+
+
+#plot_bt_lat_lon(ace, dscovr)
+    first=datetime(2016, month, 1, 00, 00)
+    start_date=[first+timedelta(days=x) for x in range(0,31)]
+
+#start_date=datetime(2016, 6, 1, 00, 00)
+#end_date=datetime(2016, 6, 2, 00, 00)
+
+    for sd in start_date:
+        ed=sd+timedelta(days=1)
+        [this_cc, this_rmse]=scatter_plot(ace, dscovr, "bx", sd, ed) #options: lon, lon+120, lat, bt, bz
+        if this_cc>0:
+            cc.append(this_cc)
+            rmse.append(this_rmse)
+            dates.append(sd)
+#        print(cc)
+
+plt.plot(dates, rmse, "r")
+plt.plot(dates, cc, "b")
+plt.title("Correlation coefficient (blue) and RMSE (red) for ACE/DSCOVR, in 2016")
 
 
 

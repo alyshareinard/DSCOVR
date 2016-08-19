@@ -16,18 +16,23 @@ def scatter_plot(ace, dscovr, product, start_date, end_date):
 
 #    product="bt" #options: lon, lon+120, lat, bt, bz
 
-
+    ace_date=ace.date
+    ace_bx=ace.bx
     
     ace_date=[]
     ace_bx=[]
+    ace_by=[]
+    ace_bz=[]
     for i in range(len(ace.date)):
         if ace.date[i]>start_date and ace.date[i]<end_date:
             ace_date.append(ace.date[i])
             ace_bx.append(ace.bx[i])
+            ace_by.append(ace.by[i])
+            ace_bz.append(ace.bz[i])
 #    print(ace_date)
     if len(ace_date)==0:
         return[0,0]
-    #choose which data product we want to plot
+#    choose which data product we want to plot
 
     if product=="lon" or product=="lon+120":
         ace_product=ace.lon
@@ -43,24 +48,24 @@ def scatter_plot(ace, dscovr, product, start_date, end_date):
         dscovr_product=dscovr.lat
         title="theta/lat from "+str(min(dscovr.date))+" to "+str(max(dscovr.date))
         ranges=[-100,100]
-    elif product=="bt":
+    elif product=="Bt":
         ace_product=ace.bt
         dscovr_product=dscovr.bt
         title="Bt from "+str(min(dscovr.date))+" to "+str(max(dscovr.date))
         ranges=[0,10]
-    elif product=="bx":
+    elif product=="Bx":
         ace_product=ace_bx
         dscovr_product=dscovr.bx
 #        title="Bx from "+str(min(dscovr.date))+" to "+str(max(dscovr.date))
         title="Bx from "+str(min(ace_date))+" to "+str(max(ace_date))
         ranges=[-8,8] 
-    elif product=="by":
-        ace_product=ace.by
+    elif product=="By":
+        ace_product=ace_by
         dscovr_product=dscovr.by
         title="By from "+str(min(dscovr.date))+" to "+str(max(dscovr.date))
         ranges=[-8,8] 
-    elif product=="bz":
-        ace_product=ace.bz
+    elif product=="Bz":
+        ace_product=ace_bz
         dscovr_product=dscovr.bz
         title="Bz from "+str(min(dscovr.date))+" to "+str(max(dscovr.date))
         ranges=[-8,8] 
@@ -71,15 +76,19 @@ def scatter_plot(ace, dscovr, product, start_date, end_date):
     #align data
     ace_data=[]
     dscovr_data=[]
+#    print("!!!!dscovr: ", len(dscovr.date), len(dscovr_product))
+#    print("!!!!ace: ", len(ace_date), len(ace_product))
     dscovr_index=0
     for index in range(len(ace_date)):
 #        print(index)
+#        print("vals dscovr, ace", dscovr.date[dscovr_index], ace_date[index])
         while dscovr.date[dscovr_index]<ace_date[index] and dscovr_index<len(dscovr.date)-1:
             dscovr_index+=1
 #            print(dscovr_index)
 #            print("skipping dscovr, no ace")
         if dscovr.date[dscovr_index]==ace_date[index]:
 #            print("got one!")
+#            print("dscovr ace: ", dscovr_index, index)
             if ace_product[index]!=None and dscovr_product[dscovr_index]!=None and ace_product[index]>-500 and dscovr_product[dscovr_index]>-500:
                 if product=="lon+120":
                     val=ace_product[index]+120
@@ -408,6 +417,7 @@ cc=[]
 dates=[]
 rmse=[]
 
+parameter="Bz"
 for month in range(2,9):
     print("ace_mag1_2016_0"+str(month)+".txt")
     dscovr=dscovr_class_sql(filename="dsc_mag1_2016_0"+str(month)+".txt")
@@ -426,16 +436,17 @@ for month in range(2,9):
 
     for sd in start_date:
         ed=sd+timedelta(days=1)
-        [this_cc, this_rmse]=scatter_plot(ace, dscovr, "bx", sd, ed) #options: lon, lon+120, lat, bt, bz
+        [this_cc, this_rmse]=scatter_plot(ace, dscovr, parameter, sd, ed) #options: lon, lon+120, lat, bt, bz
         if this_cc>0:
             cc.append(this_cc)
             rmse.append(this_rmse)
             dates.append(sd)
 #        print(cc)
 
-plt.plot(dates, rmse, "r")
-plt.plot(dates, cc, "b")
-plt.title("Correlation coefficient (blue) and RMSE (red) for ACE/DSCOVR, in 2016")
+plt.plot(dates, rmse, "r.-")
+plt.plot(dates, cc, "b.-")
+plt.ylim([0,8])
+plt.title("Correlation coefficient (blue) and RMSE (red) for ACE/DSCOVR "+parameter+", in 2016")
 
 
 

@@ -12,7 +12,7 @@ import os
 #from datetime import datetime, timezone
 #from sunpy_time import parse_time
 
-def read_DSCOVR_currents():
+def read_DSCOVR_mag():
 
     if os.sep=="/":
         osdir=os.sep+os.path.join("Users", "alyshareinard")
@@ -91,4 +91,4 @@ def read_DSCOVR_currents():
 #    mod_val=data["mod_value"]
 #    print(mod_val)
     
-read_DSCOVR_currents()
+read_DSCOVR_mag()

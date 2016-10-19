@@ -9,7 +9,6 @@ import glob
 import matplotlib.pyplot as plt
 from datetime import datetime
 from datetime import timedelta
-import sys
 import numpy as np
 
 def scatter_plot(ace, dscovr, product, start_date, end_date):

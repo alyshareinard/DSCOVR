@@ -30,7 +30,7 @@ def read_fc(filename):
     sample_count_flag=[]
     overall_quality=[]
 
-    with open(rootdir+filename, 'r') as csvfile:
+    with open(rootdir+filename, 'r', encoding='utf-8') as csvfile:
         data=csv.reader(csvfile, delimiter=',', quotechar="|")
         header=data.__next__()
         print("header", header)

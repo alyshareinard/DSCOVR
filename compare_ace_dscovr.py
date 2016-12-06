@@ -234,9 +234,9 @@ class ace_class_web:
         if os.sep=="/":
             osdir=os.sep+os.path.join("Users", "alyshareinard")
         else:
-            osdir=os.path.join("C:"+os.sep+"Users", "alysha.reinard.SWPC")
+            osdir=os.path.join("C:"+os.sep+"Users", "alysha.reinard")
     
-        rootdir=os.path.join(osdir, "Dropbox", "Work", "data", "DSCOVR")+os.sep
+        rootdir=os.path.join(osdir, "Documents", "data", "DSCOVR")+os.sep
         
         acelist=glob.glob(os.path.join(rootdir, '*mag_1m.txt'))
         self.date=[]
@@ -286,9 +286,9 @@ class ace_class_sql:
         if os.sep=="/":
             osdir=os.sep+os.path.join("Users", "alyshareinard")
         else:
-            osdir=os.path.join("C:"+os.sep+"Users", "alysha.reinard.SWPC")
+            osdir=os.path.join("C:"+os.sep+"Users", "alysha.reinard")
     
-        rootdir=os.path.join(osdir, "Dropbox", "Work", "data", "DSCOVR")+os.sep
+        rootdir=os.path.join(osdir, "Documents", "data", "DSCOVR")+os.sep
         
         acelist=glob.glob(os.path.join(rootdir, filename))
         self.date=[]
@@ -357,9 +357,9 @@ class dscovr_class_web:
         if os.sep=="/":
             osdir=os.sep+os.path.join("Users", "alyshareinard")
         else:
-            osdir=os.path.join("C:"+os.sep+"Users", "alysha.reinard.SWPC")
+            osdir=os.path.join("C:"+os.sep+"Users", "alysha.reinard")
     
-        rootdir=os.path.join(osdir, "Dropbox", "Work", "data", "DSCOVR")+os.sep
+        rootdir=os.path.join(osdir, "Documents", "data", "DSCOVR")+os.sep
         
         dscovr_file=os.path.join(rootdir, 'rtsw_plot_data.txt')
         self.date=[]
@@ -400,9 +400,9 @@ class dscovr_class_sql:
         if os.sep=="/":
             osdir=os.sep+os.path.join("Users", "alyshareinard")
         else:
-            osdir=os.path.join("C:"+os.sep+"Users", "alysha.reinard.SWPC")
+            osdir=os.path.join("C:"+os.sep+"Users", "alysha.reinard")
     
-        rootdir=os.path.join(osdir, "Dropbox", "Work", "data", "DSCOVR")+os.sep
+        rootdir=os.path.join(osdir, "Documents", "data", "DSCOVR")+os.sep
         
         dscovr_file=os.path.join(rootdir, filename)
         self.date=[]

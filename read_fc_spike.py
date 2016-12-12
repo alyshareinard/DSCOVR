@@ -101,6 +101,8 @@ def read_fc(filename):
     density=[]
     temperature=[]
     peak_pa=[]
+    theta=[]
+    phi=[]
 
     with open(rootdir+filename, 'r', encoding="utf-8") as csvfile:
         data=csv.reader(csvfile, delimiter=',', quotechar="|")
@@ -108,6 +110,7 @@ def read_fc(filename):
         print("header", header)
         for line in data:
             date=line[0]
+            print(date)
             date=date.replace(':', '-').replace(' ', '-').replace('T', '-').replace('Z', '').split('-')
             dateints=[int(round(float(x))) for x in date]
 #            print("dateints", dateints)
@@ -139,10 +142,14 @@ def read_fc(filename):
             temperature.append(float(line[42]))
 
             peak_pa.append(float(line[47]))
+            if len(line)>50:
+                phi.append(float(line[51]))
+                theta.append(float(line[53]))
 
     dscovr={"timestamp":timestamp, "modlow":modlow, "currents":currents, 
             "spe":start_peak_end, "wc":width_count, "speed":speed, 
-            "density":density, "temperature":temperature, "peak_pa":peak_pa}
+            "density":density, "temperature":temperature, "peak_pa":peak_pa, 
+            "theta":theta, "phi":phi}
     return dscovr
             
 #    print(overall_quality)
@@ -166,7 +173,7 @@ def find_dscovr_anomalies(dscovr, ace):
         #here we look and see how far the ace and dscovr speeds are apart
         speed_diff=dsc_speed[dsc_ind]-ace_speed[ace_ind]
         ace_speed_long.append(ace_speed[ace_ind])
-        if speed_diff>40:
+        if speed_diff>30:
             dsc_vel_TF.append(False)
         else:
             dsc_vel_TF.append(True)
@@ -232,6 +239,18 @@ def make_plots(dscovr, ace):
 
     speed_low=ma.array(dscovr["speed"])
     speed_low.mask=dsc_mask
+
+    theta_high=ma.array(dscovr["theta"])
+    theta_high.mask=not_dsc_mask
+
+    theta_low=ma.array(dscovr["theta"])
+    theta_low.mask=dsc_mask
+    
+    phi_high=ma.array(dscovr["phi"])
+    phi_high.mask=not_dsc_mask
+
+    phi_low=ma.array(dscovr["phi"])
+    phi_low.mask=dsc_mask
     
     timestamp_high=ma.array(dscovr["timestamp"])
     timestamp_high.mask=not_dsc_mask
@@ -250,13 +269,30 @@ def make_plots(dscovr, ace):
     plt.figure(4)
     plt.scatter(speed_high, pa_high, alpha=0.5, s=2, color="green")
     plt.scatter(speed_low, pa_low, alpha=0.5, s=2, color="red")
+    plt.xlabel("speed")
+    plt.ylabel("peak_pa")
+
+    plt.title("Data points within 40 km/s of ACE in green, rest in red")
+    plt.show()
+    
+    
+    plt.figure(14)
+    plt.scatter(theta_high, phi_high, alpha=0.5, s=2, color="green")
+    plt.scatter(theta_low, phi_low, alpha=0.5, s=2, color="red")
+    plt.xlabel("theta")
+    plt.ylabel("phi")
+
+    plt.title("Data points within 40 km/s of ACE in green, rest in red")
     plt.show()
 
     plt.figure(5)
     plt.scatter(density_low, pa_low, alpha=0.5, s=4, color="red")
     plt.scatter(density_high, pa_high, alpha=0.5, s=8, color="green")
-    plt.show()
+    plt.xlabel("density")
+    plt.ylabel("peak_pa")
+    plt.title("Data points within 40 km/s of ACE in green, rest in red")
 
+    plt.show()
 
     plt.figure(6)
     plt.plot(timestamp_high, speed_high, color="green")
@@ -264,32 +300,40 @@ def make_plots(dscovr, ace):
     
     plt.figure(7)
     bin_vals=range(10)
-    plt.hist(width_low.compressed(), color="red", alpha=0.5, label="good", bins=bin_vals)
-    plt.hist(width_high.compressed(), color="green", alpha=0.5, label="high", bins=bin_vals)
+    plt.hist(width_low.compressed(), color="red", alpha=0.5, label="velocities high", bins=bin_vals)
+    plt.hist(width_high.compressed(), color="green", alpha=0.5, label="velocities good", bins=bin_vals)
+    plt.legend(loc="best")
+
     plt.show()
 
     bin_vals=[x/10. for x in range(10)]   
     plt.figure(8)
-    plt.hist(density_low.compressed(), color="red", alpha=0.5)#, label="good", bins=bin_vals)
-    plt.hist(density_high.compressed(), color="green", alpha=0.5)#, label="high", bins=bin_vals)
+
+    plt.hist(density_low.compressed(), color="red", alpha=0.5, label="velocities high")#, bins=bin_vals)
+    plt.hist(density_high.compressed(), color="green", alpha=0.5, label="velocities good")#, bins=bin_vals)
+    plt.xlabel('density')
+    plt.legend(loc="best")
     plt.show()    
 
     plt.figure(9)
     bin_vals=range(10)
-    plt.hist(pa_low.compressed(), color="red", alpha=0.5)#, label="good", bins=bin_vals)
-    plt.hist(pa_high.compressed(), color="green", alpha=0.5)#, label="high", bins=bin_vals)
+    plt.hist(pa_low.compressed(), color="red", alpha=0.5, label="velocities high")#, bins=bin_vals)
+    plt.hist(pa_high.compressed(), color="green", alpha=0.5, label="velocities good")#, bins=bin_vals)
+    plt.legend(loc="best")
+    plt.xlabel("peak_pa")
+    plt.title("Data points within 40 km/s of ACE in green, rest in red")
     plt.show() 
     
     if dscovr_plots==True:
         plt.figure(0)
         plt.scatter(dscovr["speed"], dscovr["density"], alpha=0.5, s=2)
-        plt.xlabel="speed"
-        plt.ylabel="density"
+        plt.xlabel("speed")
+        plt.ylabel("density")
         plt.show()
         plt.figure(1)
         plt.scatter(dscovr["speed"], dscovr["peak_pa"], alpha=0.5, s=2)
-        plt.xlabel="speed"
-        plt.ylabel="peak_pa"
+        plt.xlabel("speed")
+        plt.ylabel("peak_pa")
         plt.show()
         speed_np=np.array(dscovr["speed"])
     
@@ -402,9 +446,18 @@ def make_plots(dscovr, ace):
         
 #read_fc("fc_out.csv")
         
-dscovr=read_fc("fc_spike_analysis.csv")
+#dscovr=read_fc("fc_spike_analysis.csv")
+#dscovr=read_fc("spike 500 fix clamptheta.csv")
+dscovr=read_fc("spike 500 fvvc_tan.csv")
+theta=dscovr['theta']
+phi=dscovr['phi']
+dscovr=read_fc("spike 500 fix prod.csv")
+dscovr['theta']=theta
+dscovr['phi']=phi
+
 ace=read_ace_browse("ACE_Browse_Data.csv", dscovr["timestamp"])
 ace=read_ace("ace_2016336.csv", dscovr["timestamp"])
 
 dscovr["TF"]=find_dscovr_anomalies(dscovr, ace)
 make_plots(dscovr, ace)
+

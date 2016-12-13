@@ -72,6 +72,51 @@ def scatter_plot(ace, dscovr, product, start_date, end_date):
 
 
 
+def scatter_plot_plasma(ace, dscovr, product, start_date, end_date):
+
+#    product="bt" #options: lon, lon+120, lat, bt, bz
+
+    ace_date=ace.date
+    ace_vx=ace.vx
+    
+    ace_date=[]
+    ace_vx=[]
+    ace_vy=[]
+    ace_vz=[]
+    for i in range(len(ace.date)):
+        if ace.date[i]>start_date and ace.date[i]<end_date:
+            ace_date.append(ace.date[i])
+            ace_vx.append(ace.vx[i])
+            ace_vy.append(ace.vy[i])
+            ace_vz.append(ace.vz[i])
+#    print(ace_date)
+    if len(ace_date)==0:
+        return[0,0]
+#    choose which data product we want to plot
+
+    if product=="speed":
+        ace_product=ace.speed
+        dscovr_product=dscovr.speed
+        title="speed from "+str(min(dscovr.date))+" to "+str(max(dscovr.date))
+        ranges=[0,1000]
+    elif product=="Vx":
+        ace_product=ace_vx
+        dscovr_product=dscovr.vx
+#        title="Bx from "+str(min(dscovr.date))+" to "+str(max(dscovr.date))
+        title="Vx from "+str(min(ace_date))+" to "+str(max(ace_date))
+        ranges=[-300, 300] 
+    elif product=="Vy":
+        ace_product=ace_vy
+        dscovr_product=dscovr.vy
+        title="Vy from "+str(min(dscovr.date))+" to "+str(max(dscovr.date))
+        ranges=[-300,300] 
+    elif product=="Vz":
+        ace_product=ace_vz
+        dscovr_product=dscovr.vz
+        title="Vz from "+str(min(dscovr.date))+" to "+str(max(dscovr.date))
+        ranges=[-300,300] 
+
+
         
     #align data
     ace_data=[]
@@ -88,7 +133,7 @@ def scatter_plot(ace, dscovr, product, start_date, end_date):
 #            print("skipping dscovr, no ace")
         if dscovr.date[dscovr_index]==ace_date[index]:
 #            print("got one!")
-#            print("dscovr ace: ", dscovr_index, index)
+#            print("dscovr ace: ", type(dscovr_product[dscovr_index]), type(ace_product[index]))
             if ace_product[index]!=None and dscovr_product[dscovr_index]!=None and ace_product[index]>-500 and dscovr_product[dscovr_index]>-500:
                 if product=="lon+120":
                     val=ace_product[index]+120
@@ -228,6 +273,47 @@ def read_fc(filename):
             sample_count_flag.append(int(line[9]))
             overall_quality.append(int(line[10]))
             
+class ace_plasma_class_web:
+    
+    def __init__(self):
+        if os.sep=="/":
+            osdir=os.sep+os.path.join("Users", "alyshareinard", "Dropbox")
+        else:
+            osdir=os.path.join("C:"+os.sep+"Users", "alysha.reinard", "Documents")
+    
+        acefile=os.path.join(osdir, "data", "DSCOVR")+os.sep+"ace_swepam_2016.csv"
+        
+        self.date=[]
+        self.speed=[]
+        self.density=[]
+        self.temp=[]
+        self.vx=[]
+        self.vy=[]
+        self.vz=[]
+        print("ACE FILE", acefile)
+        with open(acefile, "r") as csvfile:
+            ace_data=csv.reader(csvfile, delimiter=',', quotechar="|")
+
+            for line in ace_data:
+            
+
+                year=int(line[0])
+                day=float(line[1])
+                hour=float(line[2])
+                minute=float(line[3])
+                sec=float(line[4])
+                doy=day+hour/24.+minute/24./60.+sec/24./60./60.
+#                print("day", day, doy)
+                self.date.append(datetime(year, 1, 1)+timedelta(doy-1))
+            
+                self.density.append(float(line[8]))
+                self.temp.append(float(line[9]))
+                self.speed.append(float(line[11]))
+                self.vx.append(float(line[12]))
+                self.vy.append(float(line[13]))
+                self.vz.append(float(line[14]))
+
+                    
 class ace_class_web:
     
     def __init__(self):
@@ -447,6 +533,75 @@ class dscovr_class_sql:
 #                self.lon.append(float(line[6]))
 #                self.lat.append(float(line[7]))
 
+class dscovr_FC_class_sql:
+    def __init__(self, filename="DSCOVR_RTSW_ALL.csv"):
+        if os.sep=="/":
+            osdir=os.sep+os.path.join("Users", "alyshareinard")
+        else:
+            osdir=os.path.join("C:"+os.sep+"Users", "alysha.reinard")
+    
+        rootdir=os.path.join(osdir, "Documents", "data", "DSCOVR")+os.sep
+        
+        dscovr_file=os.path.join(rootdir, filename)
+        self.swid=[]
+        self.recordid=[]
+        self.date=[]
+        self.cadence=[]
+        self.speed=[]
+        self.temp=[]
+        self.density=[]
+        self.vx=[]
+        self.vy=[]
+        self.vz=[]
+        self.samplesize=[]
+
+
+            
+        with open(dscovr_file, "r") as csvfile:
+            dscovr_data=csv.reader(csvfile, delimiter=',', quotechar="|")
+            for i in range(1): header=dscovr_data.__next__()
+            for line in dscovr_data:
+                if line[0]!="T":
+#                    line=line.split()
+    #                print(line)
+                    ymd=line[2].replace(":", "-").replace(" ", "-").split("-")
+#                    print(ymd)
+                    year=int(ymd[0])
+                    month=int(ymd[1])
+                    day=int(ymd[2])
+                    hour=int(ymd[3])
+                    minute=int(ymd[4])
+                    sec=int(round(float(ymd[5])))
+        #            print(year, month, day, hour, minute, sec)
+                    self.date.append(datetime(year, month, day, hour, minute, sec))
+        #            print(date)
+     #               self.bt.append(float(line[2]))
+                    if line[7]=="NULL":
+                        self.speed.append(None)
+                    else:
+                        self.speed.append(float(line[7]))
+                    if line[8]=="NULL":
+                        self.temp.append(None)
+                    else:
+                        self.temp.append(float(line[8]))
+                    if line[9]=="NULL":
+                        self.density.append(None)
+                    else:
+                        self.density.append(float(line[9]))
+                    if line[10]=="NULL":
+                        self.vx.append(None)
+                    else:
+                        self.vx.append(float(line[10]))
+                    if line[11]=="NULL":
+                        self.vy.append(None)
+                    else:
+                        self.vy.append(float(line[11]))
+                    if line[12]=="NULL":
+                        self.vz.append(None)
+                    else:
+                        self.vz.append(float(line[12]))
+    #                self.lon.append(float(line[6]))
+    #                self.lat.append(float(line[7]))
 
 
 
@@ -458,36 +613,46 @@ cc=[]
 dates=[]
 rmse=[]
 
-parameter="Bz"
-for month in range(2,9):
-    print("ace_mag1_2016_0"+str(month)+".txt")
-    dscovr=dscovr_class_sql(filename="dsc_mag1_2016_0"+str(month)+".txt")
-    ace=ace_class_sql(filename="ace_mag1_2016_0"+str(month)+".txt")
-#    print("dates", ace.date)
 
+dscovr_plasma=dscovr_FC_class_sql()
+ace_plasma=ace_plasma_class_web()
 
+start_date=datetime(2016, 1, 1, 00, 00)
+end_date=datetime(2016, 12, 2, 00, 00)
+product="speed"
+scatter_plot_plasma(ace_plasma, dscovr_plasma, product, start_date, end_date)
 
-
-#plot_bt_lat_lon(ace, dscovr)
-    first=datetime(2016, month, 1, 00, 00)
-    start_date=[first+timedelta(days=x) for x in range(0,31)]
-
-#start_date=datetime(2016, 6, 1, 00, 00)
-#end_date=datetime(2016, 6, 2, 00, 00)
-
-    for sd in start_date:
-        ed=sd+timedelta(days=1)
-        [this_cc, this_rmse]=scatter_plot(ace, dscovr, parameter, sd, ed) #options: lon, lon+120, lat, bt, bz
-        if this_cc>0:
-            cc.append(this_cc)
-            rmse.append(this_rmse)
-            dates.append(sd)
-#        print(cc)
-
-plt.plot(dates, rmse, "r.-")
-plt.plot(dates, cc, "b.-")
-plt.ylim([0,8])
-plt.title("Correlation coefficient (blue) and RMSE (red) for ACE/DSCOVR "+parameter+", in 2016")
+#
+#parameter="Bz"
+#for month in range(2,9):
+#    print("ace_mag1_2016_0"+str(month)+".txt")
+#    dscovr=dscovr_class_sql(filename="dsc_mag1_2016_0"+str(month)+".txt")
+#    ace=ace_class_sql(filename="ace_mag1_2016_0"+str(month)+".txt")
+##    print("dates", ace.date)
+#
+#
+#
+#
+##plot_bt_lat_lon(ace, dscovr)
+#    first=datetime(2016, month, 1, 00, 00)
+#    start_date=[first+timedelta(days=x) for x in range(0,31)]
+#
+##start_date=datetime(2016, 6, 1, 00, 00)
+##end_date=datetime(2016, 6, 2, 00, 00)
+#
+#    for sd in start_date:
+#        ed=sd+timedelta(days=1)
+#        [this_cc, this_rmse]=scatter_plot(ace, dscovr, parameter, sd, ed) #options: lon, lon+120, lat, bt, bz
+#        if this_cc>0:
+#            cc.append(this_cc)
+#            rmse.append(this_rmse)
+#            dates.append(sd)
+##        print(cc)
+#
+#plt.plot(dates, rmse, "r.-")
+#plt.plot(dates, cc, "b.-")
+#plt.ylim([0,8])
+#plt.title("Correlation coefficient (blue) and RMSE (red) for ACE/DSCOVR "+parameter+", in 2016")
 
 
 

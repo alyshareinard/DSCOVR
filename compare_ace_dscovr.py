@@ -277,7 +277,7 @@ class ace_plasma_class_web:
     
     def __init__(self):
         if os.sep=="/":
-            osdir=os.sep+os.path.join("Users", "alyshareinard", "Dropbox")
+            osdir=os.sep+os.path.join("Users", "alyshareinard", "Dropbox", "Work")
         else:
             osdir=os.path.join("C:"+os.sep+"Users", "alysha.reinard", "Documents")
     

@@ -115,6 +115,15 @@ def scatter_plot_plasma(ace, dscovr, product, start_date, end_date):
         dscovr_product=dscovr.vz
         title="Vz from "+str(min(dscovr.date))+" to "+str(max(dscovr.date))
         ranges=[-300,300] 
+    elif product=="temp":
+        ace_product=ace.temp
+        dscovr_product=dscovr.temp
+        title="temp from "+str(min(dscovr.date))+" to "+str(max(dscovr.date))
+
+    elif product=="density":
+        ace_product=ace.density
+        dscovr_product=dscovr.density
+        title="density from "+str(min(dscovr.date))+" to "+str(max(dscovr.date))
 
 
         
@@ -156,7 +165,9 @@ def scatter_plot_plasma(ace, dscovr, product, start_date, end_date):
     print(start_date, cc[0,1], rms)
 
 
-#    plt.plot(ace_data, dscovr_data, 'b.')
+    plt.scatter(ace_data, dscovr_data)
+#    plt.xlim([-300, 300])
+#    plt.ylim([-300, 300])
 ##    plt.xlim([0,10])
 #    plt.title(title)
 #    plt.xlabel("ACE data")
@@ -536,11 +547,11 @@ class dscovr_class_sql:
 class dscovr_FC_class_sql:
     def __init__(self, filename="DSCOVR_RTSW_ALL.csv"):
         if os.sep=="/":
-            osdir=os.sep+os.path.join("Users", "alyshareinard")
+            osdir=os.sep+os.path.join("Users", "alyshareinard", "Dropbox", "Work")
         else:
-            osdir=os.path.join("C:"+os.sep+"Users", "alysha.reinard")
+            osdir=os.path.join("C:"+os.sep+"Users", "alysha.reinard", "Documents")
     
-        rootdir=os.path.join(osdir, "Documents", "data", "DSCOVR")+os.sep
+        rootdir=os.path.join(osdir, "data", "DSCOVR")+os.sep
         
         dscovr_file=os.path.join(rootdir, filename)
         self.swid=[]
@@ -557,7 +568,7 @@ class dscovr_FC_class_sql:
 
 
             
-        with open(dscovr_file, "r") as csvfile:
+        with open(dscovr_file, "r", encoding="utf-8") as csvfile:
             dscovr_data=csv.reader(csvfile, delimiter=',', quotechar="|")
             for i in range(1): header=dscovr_data.__next__()
             for line in dscovr_data:
@@ -619,8 +630,40 @@ ace_plasma=ace_plasma_class_web()
 
 start_date=datetime(2016, 1, 1, 00, 00)
 end_date=datetime(2016, 12, 2, 00, 00)
+plt.figure(0)
 product="speed"
 scatter_plot_plasma(ace_plasma, dscovr_plasma, product, start_date, end_date)
+
+plt.figure(1)
+product="temp"
+scatter_plot_plasma(ace_plasma, dscovr_plasma, product, start_date, end_date)
+
+plt.figure(2)
+product="density"
+scatter_plot_plasma(ace_plasma, dscovr_plasma, product, start_date, end_date)
+
+plt.figure(3)
+product="Vx"
+scatter_plot_plasma(ace_plasma, dscovr_plasma, product, start_date, end_date)
+print("plotted vx")
+
+plt.figure(4)
+product="Vy"
+[ccvy, rmsvy]=scatter_plot_plasma(ace_plasma, dscovr_plasma, product, start_date, end_date)
+plt.figure(14)
+print(len(rmsvy))
+print(len(ccvy))
+print(len(ace_plasma.date))
+print(len(dscovr_plasma.date))
+plt.plot(ace_plasma.date, rmsvy, "r.-")
+plt.plot(ace_plasma.date, ccvy, "b.-")
+
+plt.figure(5)
+product="Vz"
+scatter_plot_plasma(ace_plasma, dscovr_plasma, product, start_date, end_date)
+
+
+
 
 #
 #parameter="Bz"

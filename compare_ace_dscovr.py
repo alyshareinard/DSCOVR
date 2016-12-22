@@ -566,8 +566,6 @@ class dscovr_FC_class_sql:
         self.vz=[]
         self.samplesize=[]
 
-
-            
         with open(dscovr_file, "r", encoding="utf-8") as csvfile:
             dscovr_data=csv.reader(csvfile, delimiter=',', quotechar="|")
             for i in range(1): header=dscovr_data.__next__()
@@ -651,18 +649,40 @@ plt.figure(4)
 product="Vy"
 [ccvy, rmsvy]=scatter_plot_plasma(ace_plasma, dscovr_plasma, product, start_date, end_date)
 plt.figure(14)
-print(len(rmsvy))
-print(len(ccvy))
-print(len(ace_plasma.date))
-print(len(dscovr_plasma.date))
-plt.plot(ace_plasma.date, rmsvy, "r.-")
-plt.plot(ace_plasma.date, ccvy, "b.-")
+
+#plt.plot(ace_plasma.date, rmsvy, "r.-")
+#plt.plot(ace_plasma.date, ccvy, "b.-")
 
 plt.figure(5)
 product="Vz"
 scatter_plot_plasma(ace_plasma, dscovr_plasma, product, start_date, end_date)
 
+parameter="Vz"
 
+date=datetime(2016, 1, 1, 00, 00)
+while date<datetime(2016, 12, 31):
+    sd=date
+    print("sd", sd)
+    ed=sd+timedelta(days=1)
+    date=ed #set date to end of the day for next run through
+    
+#start_date=datetime(2016, 6, 1, 00, 00)
+#end_date=datetime(2016, 6, 2, 00, 00)
+
+    [this_cc, this_rmse]=scatter_plot_plasma(ace_plasma, dscovr_plasma, parameter, sd, ed) #options: lon, lon+120, lat, bt, bz
+    if this_cc>0:
+        cc.append(this_cc)
+        rmse.append(this_rmse)
+        dates.append(sd)
+#        print(cc)
+print("ready to plot")
+print(rmse)
+print(cc)
+print(dates)
+#plt.plot(dates, rmse, "r.-")
+#plt.plot(dates, cc, "b.-")
+#plt.ylim([0,8])
+#plt.title("Correlation coefficient (blue) and RMSE (red) for ACE/DSCOVR "+parameter+", in 2016")
 
 
 #

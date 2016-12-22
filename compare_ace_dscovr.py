@@ -91,6 +91,7 @@ def scatter_plot_plasma(ace, dscovr, product, start_date, end_date):
             ace_vz.append(ace.vz[i])
 #    print(ace_date)
     if len(ace_date)==0:
+        print("no ace data, returning")
         return[0,0]
 #    choose which data product we want to plot
 
@@ -165,7 +166,7 @@ def scatter_plot_plasma(ace, dscovr, product, start_date, end_date):
     print(start_date, cc[0,1], rms)
 
 
-    plt.scatter(ace_data, dscovr_data)
+#    plt.scatter(ace_data, dscovr_data)
 #    plt.xlim([-300, 300])
 #    plt.ylim([-300, 300])
 ##    plt.xlim([0,10])
@@ -174,6 +175,7 @@ def scatter_plot_plasma(ace, dscovr, product, start_date, end_date):
 #    plt.ylabel("DSCOVR data")
 #    plt.plot(ranges, ranges)
 #    plt.show()   
+    if cc[0,1]==nan: print("Hmm, bad data, here are lengths of ace and dscovr", len(ace_data), len(dscovr_data))
     return [cc[0,1], rms]
 #    return cc[0,1]    
         

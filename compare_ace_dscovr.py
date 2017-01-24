@@ -174,8 +174,9 @@ def scatter_plot_plasma(ace, dscovr, product, start_date, end_date):
 #    plt.xlabel("ACE data")
 #    plt.ylabel("DSCOVR data")
 #    plt.plot(ranges, ranges)
-#    plt.show()   
-    if cc[0,1]==nan: print("Hmm, bad data, here are lengths of ace and dscovr", len(ace_data), len(dscovr_data))
+#    plt.show()  
+    print(cc[0,1]) 
+#    if cc[0,1].isdigit()==False: print("Hmm, bad data, here are lengths of ace and dscovr", len(ace_data), len(dscovr_data))
     return [cc[0,1], rms]
 #    return cc[0,1]    
         
@@ -628,8 +629,8 @@ rmse=[]
 dscovr_plasma=dscovr_FC_class_sql()
 ace_plasma=ace_plasma_class_web()
 
-start_date=datetime(2016, 1, 1, 00, 00)
-end_date=datetime(2016, 12, 2, 00, 00)
+start_date=datetime(2015, 12, 30, 00, 00)
+end_date=datetime(2016, 1, 2, 00, 00)
 plt.figure(0)
 product="speed"
 scatter_plot_plasma(ace_plasma, dscovr_plasma, product, start_date, end_date)
@@ -661,8 +662,8 @@ scatter_plot_plasma(ace_plasma, dscovr_plasma, product, start_date, end_date)
 
 parameter="Vz"
 
-date=datetime(2016, 1, 1, 00, 00)
-while date<datetime(2016, 12, 31):
+date=datetime(2015, 12, 30, 00, 00)
+while date<datetime(2016, 1, 2):
     sd=date
     print("sd", sd)
     ed=sd+timedelta(days=1)
